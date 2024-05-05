@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -19,7 +20,7 @@ var (
 	watch_delay_milli int               = 100
 	command           string            = ""
 	entries           map[string]string = make(map[string]string)
-	skips             ignores           = ignores([]string{".git", "node_modules"})
+	skips             ignores           = ignores([]string{})
 )
 
 func (i *ignores) Set(value string) error {
@@ -47,7 +48,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-
 	if stat, err := os.Stat(watch_location); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -59,33 +59,59 @@ func main() {
 
 func traverse(path string) {
 	log.Printf("Watching %s for changes.\n", path)
+
+	var patterns string
+	for _, pattern := range skips {
+		patterns += pattern + "|"
+	}
+	patterns = strings.TrimRight(patterns, "|")
+	regex := regexp.MustCompile(patterns)
 	first_run := true
 	for {
 		filepath.WalkDir(path, func(path string, entry os.DirEntry, err error) error {
+			// check for error in walking path, skip dir if error
 			if err != nil {
 				log.Fatal(err)
 				return filepath.SkipDir
 			}
-			info, _ := entry.Info()
-			log.Print(path + ": ")
-			log.Println(info.Sys().(*syscall.Stat_t).Nlink)
+			// check if entry is to be skipped based on ignore patterns
+			if regex.Match([]byte(entry.Name())) {
+				if first_run {
+					log.Println("Skipped " + entry.Name())
+				}
+				return nil
+			}
+			//
+			//
+			// Check for changes
 			if val, exist := entries[path]; exist {
-				fmt.Println(val)
+				// entry exists in map, check if changed
+				fmt.Println(val == getStringFromInfo(entry))
 			} else {
-				fmt.Println("Does not exist")
+				if !first_run {
+					// this means this is a new entry in watched directory
+					fmt.Println("Does not exist: " + path)
+				} else {
+					// this is first run, so add to map
+					entries[path] = getStringFromInfo(entry)
+				}
 			}
 			return nil
 		})
+		// this only to be run for first run. Then set the first run false
 		if first_run {
 			fmt.Println("First run complete")
+			first_run = false
 		}
-		first_run = false
+		fmt.Println(entries)
 		time.Sleep(time.Duration(watch_delay_milli) * time.Millisecond)
 	}
 
 }
 
-func getStringFromInfo(info os.FileInfo) string {
+func getStringFromInfo(dir os.DirEntry) string {
+	info, _ := dir.Info()
 	stat := info.Sys().(*syscall.Stat_t)
-	return fmt.Sprintf("%d", stat.Nlink)
+	fmt.Sprintf("%d%d%d%d", stat.Nlink, stat.Ino, stat.Size, stat.Mtimespec.Sec)
+	return fmt.Sprintf("%d%d%d%d", stat.Nlink, stat.Ino, stat.Size, stat.Mtimespec.Sec)
 }
