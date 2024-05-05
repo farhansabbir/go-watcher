@@ -41,10 +41,7 @@ func traverse(path string) {
 			log.Fatal(err)
 			return filepath.SkipDir
 		}
-		if d.IsDir() {
-			log.Printf("Traversing %s\n", path)
-			traverse(path)
-		}
+		log.Println(path)
 		return nil
 	})
 }
