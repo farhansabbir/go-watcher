@@ -1,3 +1,4 @@
+// +debug windows
 package main
 
 import (
@@ -8,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -110,8 +112,14 @@ func traverse(path string) {
 }
 
 func getStringFromInfo(dir os.DirEntry) string {
+	var ret string
 	info, _ := dir.Info()
-	stat := info.Sys().(*syscall.Stat_t)
-	fmt.Sprintf("%d%d%d%d", stat.Nlink, stat.Ino, stat.Size, stat.Mtimespec.Sec)
-	return fmt.Sprintf("%d%d%d%d", stat.Nlink, stat.Ino, stat.Size, stat.Mtimespec.Sec)
+	if runtime.GOOS != "windows" {
+		stat := info.Sys().(*syscall.Stat_t)
+		ret = fmt.Sprintf("%d%d%d%d", stat.Nlink, stat.Ino, stat.Size, stat.Mtimespec.Sec)
+	} else {
+		// need to check about windows equivalent of stat_t structure
+	}
+
+	return ret
 }
