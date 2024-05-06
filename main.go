@@ -92,13 +92,14 @@ func traverse(path string) {
 			if val, exist := entries[path]; exist {
 				// entry exists in map, check if changed
 				if val != lib.GetStringFromInfo(entry) {
-					log.Println("Changed " + entry.Name())
 					if command != "" {
-						log.Println("Running command: " + command)
+						log.Println("Change detected: '" + entry.Name() + "'. Running command: " + command)
 						var procAttr os.ProcAttr
 						procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
 						proc, _ := os.StartProcess(command, []string{command}, &procAttr)
 						proc.Wait()
+					} else {
+						log.Println("Change detected: '" + entry.Name() + "', but no command is specified.")
 					}
 					entries[path] = lib.GetStringFromInfo(entry)
 				}

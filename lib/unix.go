@@ -15,5 +15,5 @@ func GetStringFromInfo(dir os.DirEntry) string {
 	hash := md5.New()
 	info, _ := dir.Info()
 	stat := info.Sys().(*syscall.Stat_t)
-	return string(hash.Sum([]byte(fmt.Sprint(stat.Size, stat.Mtimespec, stat.Mode, stat.Dev, stat.Ino))))
+	return string(hash.Sum([]byte(fmt.Sprint(stat.Size, stat.Mtimespec, stat.Mode, stat.Dev, stat.Ino, stat.Uid, stat.Gid))))
 }
