@@ -78,8 +78,9 @@ func traverse(path string) {
 				log.Fatal(err)
 				return filepath.SkipDir
 			}
+
 			// check if entry is to be skipped based on ignore patterns
-			if regex.Match([]byte(entry.Name())) {
+			if regex.Match([]byte(entry.Name())) && regex.String() != "" {
 				if first_run {
 					log.Println("Skipped " + entry.Name())
 				}
@@ -90,24 +91,26 @@ func traverse(path string) {
 			// Check for changes
 			if val, exist := entries[path]; exist {
 				// entry exists in map, check if changed
-				fmt.Println(val == lib.GetStringFromInfo(entry))
-			} else {
-				if !first_run {
-					// this means this is a new entry in watched directory
-					fmt.Println("Does not exist: " + path)
-				} else {
-					// this is first run, so add to map
+				if val != lib.GetStringFromInfo(entry) {
+					log.Println("Changed " + entry.Name())
+					if command != "" {
+						log.Println("Running command: " + command)
+						var procAttr os.ProcAttr
+						procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
+						proc, _ := os.StartProcess(command, []string{command}, &procAttr)
+						proc.Wait()
+					}
 					entries[path] = lib.GetStringFromInfo(entry)
 				}
+			} else {
+				entries[path] = lib.GetStringFromInfo(entry)
 			}
 			return nil
 		})
 		// this only to be run for first run. Then set the first run false
 		if first_run {
-			fmt.Println("First run complete")
 			first_run = false
 		}
-		fmt.Println(entries)
 		time.Sleep(time.Duration(watch_delay_milli) * time.Millisecond)
 	}
 

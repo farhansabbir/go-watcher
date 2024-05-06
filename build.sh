@@ -1,1 +1,1 @@
-export Version=`git rev-list -1 HEAD` && go run -ldflags "-X main.Version=$Version" main.go -watch ./lib/
+export Version=`git rev-list -1 HEAD` && go build -o bin/fsswatcher -ldflags "-X main.Version=$Version" main.go
