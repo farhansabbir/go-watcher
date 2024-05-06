@@ -1,0 +1,1 @@
+export Version=`git rev-list -1 HEAD` && go run -ldflags "-X main.Version=$Version" main.go -watch ./lib/

@@ -1,4 +1,3 @@
-// +debug windows
 package main
 
 import (
@@ -9,10 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
-	"syscall"
 	"time"
+
+	"github.com/farhansabbir/go-fswatcher/lib"
 )
 
 type ignores []string
@@ -23,6 +22,7 @@ var (
 	command           string            = ""
 	entries           map[string]string = make(map[string]string)
 	skips             ignores           = ignores([]string{})
+	Version                             = "0.0.1"
 )
 
 func (i *ignores) Set(value string) error {
@@ -43,7 +43,9 @@ func init() {
 	flag.Var(&skips, "ignore", "patterns to ignore when checking for changes, can use multiple times.")
 	flag.StringVar(&command, "command", "", "command to run when changes are detected. Can be multiple shell commands or a single program.")
 	flag.Usage = func() {
-		log.Printf("Usage: {} -watch <path> -delay <miliseconds>")
+		fmt.Printf(`Usage: %s -watch <path> -delay <miliseconds>`, flag.CommandLine.Name())
+		fmt.Println()
+		fmt.Println("Version: " + Version[:5])
 		flag.PrintDefaults()
 	}
 }
@@ -88,14 +90,14 @@ func traverse(path string) {
 			// Check for changes
 			if val, exist := entries[path]; exist {
 				// entry exists in map, check if changed
-				fmt.Println(val == getStringFromInfo(entry))
+				fmt.Println(val == lib.GetStringFromInfo(entry))
 			} else {
 				if !first_run {
 					// this means this is a new entry in watched directory
 					fmt.Println("Does not exist: " + path)
 				} else {
 					// this is first run, so add to map
-					entries[path] = getStringFromInfo(entry)
+					entries[path] = lib.GetStringFromInfo(entry)
 				}
 			}
 			return nil
@@ -109,17 +111,4 @@ func traverse(path string) {
 		time.Sleep(time.Duration(watch_delay_milli) * time.Millisecond)
 	}
 
-}
-
-func getStringFromInfo(dir os.DirEntry) string {
-	var ret string
-	info, _ := dir.Info()
-	if runtime.GOOS != "windows" {
-		stat := info.Sys().(*syscall.Stat_t)
-		ret = fmt.Sprintf("%d%d%d%d", stat.Nlink, stat.Ino, stat.Size, stat.Mtimespec.Sec)
-	} else {
-		// need to check about windows equivalent of stat_t structure
-	}
-
-	return ret
 }
