@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -96,19 +97,37 @@ func traverse(path string) {
 					if command != "" {
 						log.Println("Change detected: '" + entry.Name() + "'. Running command: " + command)
 						var procAttr os.ProcAttr
+						var output strings.Builder
 						procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
-						proc := exec.Command(command)
-						output, err := proc.CombinedOutput()
-						if err != nil {
+						// commandsplit := strings.Split(flag.Arg(0), " ")
+						ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+						defer cancel()
+
+						commandparamsplit := strings.Split(command, " ")
+						commandsplit := strings.Split(command, " ")[0]
+						if len(commandparamsplit) > 1 {
+							commandparamsplit = commandparamsplit[1 : len(commandparamsplit)-1]
+						}
+						log.Println(commandsplit)
+						log.Println(commandparamsplit)
+						proc := exec.CommandContext(ctx, commandsplit, commandparamsplit...)
+						proc.Stdout = &output
+
+						if err = proc.Run(); err != nil {
+							log.Println(err)
 							log.Println("Command '" + command + "' did not run successfully.")
 						} else {
-							fmt.Println(string(output))
+							fmt.Println(output.String())
 						}
 
 						// proc, _ := os.StartProcess(command, []string{command}, &procAttr)
-						// proc.Wait()
+						// state, err := proc.Wait()
+						// if err != nil {
+						// 	log.Println(err.Error())
+						// }
+						// log.Println(state.Success())
 					} else {
-						log.Println("Change detected: '" + entry.Name() + "', but no command is specified.")
+						log.Println("Change detected: '" + path + "', but no command is specified.")
 					}
 					entries[path] = lib.GetStringFromInfo(entry)
 				}
