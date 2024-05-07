@@ -6,7 +6,7 @@ run:
 all: linux-x64 linux-arm64 darwin-x64 darwin-arm64 windows
 	
 windows:
-	GOOS=windows GOARCH=amd64 go build -o bin/fsswatcher.exe -tags windows -ldflags "-X main.Version=$(VERSION)" main.go
+	GOOS=windows GOARCH=amd64 go build -o bin/$(BINARY).windows.x64.exe -tags windows -ldflags "-X main.Version=$(VERSION)" main.go
 
 linux-arm64:
 	GOOS=windows GOARCH=amd64 go build -o bin/$(BINARY).linux-arm64 -ldflags "-X main.Version=$(VERSION)" main.go
