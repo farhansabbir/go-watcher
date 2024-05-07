@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -96,8 +97,16 @@ func traverse(path string) {
 						log.Println("Change detected: '" + entry.Name() + "'. Running command: " + command)
 						var procAttr os.ProcAttr
 						procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
-						proc, _ := os.StartProcess(command, []string{command}, &procAttr)
-						proc.Wait()
+						proc := exec.Command(command)
+						output, err := proc.CombinedOutput()
+						if err != nil {
+							log.Println("Command '" + command + "' did not run successfully.")
+						} else {
+							fmt.Println(string(output))
+						}
+
+						// proc, _ := os.StartProcess(command, []string{command}, &procAttr)
+						// proc.Wait()
 					} else {
 						log.Println("Change detected: '" + entry.Name() + "', but no command is specified.")
 					}
