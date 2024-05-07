@@ -63,8 +63,8 @@ func main() {
 	}
 }
 
-func traverse(path string) {
-	log.Printf("Watching %s for changes.\n", path)
+func traverse(rootpath string) {
+	log.Printf("Watching %s for changes.\n", rootpath)
 
 	var patterns string
 	for _, pattern := range skips {
@@ -74,7 +74,7 @@ func traverse(path string) {
 	regex := regexp.MustCompile(patterns)
 	first_run := true
 	for {
-		filepath.WalkDir(path, func(path string, entry os.DirEntry, err error) error {
+		filepath.WalkDir(rootpath, func(path string, entry os.DirEntry, err error) error {
 			// check for error in walking path, skip dir if error
 			if err != nil {
 				log.Fatal(err)
