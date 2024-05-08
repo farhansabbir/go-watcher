@@ -95,7 +95,7 @@ func traverse(rootpath string) {
 				// entry exists in map, check if changed
 				if val != lib.GetStringFromInfo(entry) {
 					if command != "" {
-						log.Println("Change detected: '" + entry.Name() + "'. Running command: " + command)
+						log.Println("Change: '" + path + "'")
 						var procAttr os.ProcAttr
 						var output strings.Builder
 						procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
@@ -119,11 +119,15 @@ func traverse(rootpath string) {
 						// }
 						// log.Println(state.Success())
 					} else {
-						log.Println("Change detected: '" + path + "', but no command is specified.")
+						log.Println("Change: '" + path + "'")
 					}
 					entries[path] = lib.GetStringFromInfo(entry)
 				}
 			} else {
+				if !first_run {
+					log.Println("New: '" + path + "'")
+				}
+
 				entries[path] = lib.GetStringFromInfo(entry)
 			}
 			return nil
