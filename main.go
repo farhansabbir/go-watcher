@@ -43,7 +43,7 @@ func init() {
 	flag.StringVar(&watch_location, "watch", "./", "location to watch for changes.")
 	flag.IntVar(&watch_delay_milli, "delay", 100, "delay in miliseconds between checking for changes.")
 	flag.Var(&skips, "ignore", "patterns to ignore when checking for changes, can use multiple times.")
-	flag.StringVar(&command, "command", "", "command to run when changes are detected. Can be multiple shell commands or a single program.")
+	flag.StringVar(&command, "command", "", "Parameterless command/script to run when changes are detected. Pass platform specific script for commands with arguments or multiple commands.")
 	flag.Usage = func() {
 		fmt.Printf(`Usage: %s -watch <path> -delay <miliseconds>`, flag.CommandLine.Name())
 		fmt.Println()
@@ -102,15 +102,7 @@ func traverse(rootpath string) {
 						// commandsplit := strings.Split(flag.Arg(0), " ")
 						ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 						defer cancel()
-
-						commandparamsplit := strings.Split(command, " ")
-						commandsplit := strings.Split(command, " ")[0]
-						if len(commandparamsplit) > 1 {
-							commandparamsplit = commandparamsplit[1 : len(commandparamsplit)-1]
-						}
-						log.Println(commandsplit)
-						log.Println(commandparamsplit)
-						proc := exec.CommandContext(ctx, commandsplit, commandparamsplit...)
+						proc := exec.CommandContext(ctx, command)
 						proc.Stdout = &output
 
 						if err = proc.Run(); err != nil {
