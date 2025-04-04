@@ -1,7 +1,7 @@
 BINARY=dmarts.watcher
 COMMIT=$(shell git rev-list -1 HEAD)
 VERSION=$(shell git tag --contains $(COMMIT))
-VERSIONSTR="$(VERSION)-$(shell git show --no-patch --format="%cd" --date='format:%d%m%Y%H%M%S' $(VERSION))"
+VERSIONSTR="$(VERSION)-$(COMMIT)-$(shell git show --no-patch --format="%cd" --date='format:%d%m%Y%H%M%S' $(VERSION))"
 LDFLAGS=-ldflags "-X main.Version=$(VERSIONSTR) -s -w"
 CGO_DISABLED="CGO_ENABLED=0"
 BUILDFLAGS=-buildvcs=true $(LDFLAGS)

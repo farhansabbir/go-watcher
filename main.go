@@ -47,7 +47,7 @@ func init() {
 	flag.Usage = func() {
 		fmt.Printf(`Usage: %s -watch <path> -delay <miliseconds>`, flag.CommandLine.Name())
 		fmt.Println()
-		fmt.Println("Version: " + Version[:5])
+		fmt.Println("Version: " + Version)
 		flag.PrintDefaults()
 	}
 }
