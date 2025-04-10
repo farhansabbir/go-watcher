@@ -1,4 +1,4 @@
-BINARY=dmarts.watcher
+BINARY=watcher
 COMMIT=$(shell git rev-list -1 HEAD)
 VERSION=$(shell git tag --contains $(COMMIT))
 VERSIONSTR="$(VERSION)-$(COMMIT)-$(shell git show --no-patch --format="%cd" --date='format:%d%m%Y%H%M%S' $(VERSION))"
